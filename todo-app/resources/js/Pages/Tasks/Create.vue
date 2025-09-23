@@ -1,6 +1,12 @@
 <template>
     <AppLayout>
         <div
+            v-if="$page.props.errors && typeof $page.props.errors === 'string'"
+            class="alert alert-danger"
+        >
+            {{ $page.props.errors }}
+        </div>
+        <div
             class="min-h-screen flex items-center justify-center bg-transparent"
         >
             <div class="max-w-2xl w-full">
@@ -28,6 +34,11 @@
                                 class="w-full px-3 py-2 border border-blue-200 dark:border-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-950 dark:text-blue-100"
                                 placeholder="Task title"
                             />
+                            <span
+                                v-if="errors.title"
+                                class="text-red-500 text-xs"
+                                >{{ errors.title }}</span
+                            >
                         </div>
                         <div>
                             <label
@@ -69,6 +80,7 @@
                                 <select
                                     v-model="form.priority"
                                     id="priority"
+                                    required
                                     class="w-full px-3 py-2 border border-blue-200 dark:border-blue-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-950 dark:text-blue-100"
                                 >
                                     <option value="">Select</option>
@@ -78,15 +90,24 @@
                                 </select>
                             </div>
                         </div>
-                    </form>
-                    <template #actions>
-                        <button
-                            @click="submit"
-                            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition"
+                        <div
+                            class="w-full mt-2 flex gap-2 items-center justify-center"
                         >
-                            Create Task
-                        </button>
-                    </template>
+                            <button
+                                @click="router.visit('/tasks')"
+                                type="button"
+                                class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 rounded-lg transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                @click="submit"
+                                class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition"
+                            >
+                                Create Task
+                            </button>
+                        </div>
+                    </form>
                 </TaskCard>
             </div>
         </div>
@@ -98,6 +119,9 @@ import { router } from "@inertiajs/vue3";
 import { reactive } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import TaskCard from "@/Components/TaskCard.vue";
+import { usePage } from "@inertiajs/vue3";
+
+const { errors } = usePage().props;
 
 const form = reactive({
     title: "",

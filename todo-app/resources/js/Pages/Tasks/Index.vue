@@ -1,39 +1,66 @@
 <template>
     <AppLayout>
-        <div class="max-w-7xl mx-auto pt-24 pb-10 px-2">
+        <div class="w-full pt-24 pb-10 px-2">
             <h1
                 class="text-4xl font-extrabold text-blue-900 dark:text-blue-100 mb-8 tracking-tight text-center drop-shadow-sm"
             >
                 My Tasks
             </h1>
-            <button
-                @click="createTask"
-                class="bg-blue-500 text-white px-4 py-2 rounded-lg mb-8 font-semibold hover:bg-blue-600 transition-all shadow-md w-fit flex items-center gap-2"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4"
-                    />
-                </svg>
-                Create Task
-            </button>
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8"
+                v-if="$page.props.flash && $page.props.flash.success"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed top-24 right-4 z-50 shadow-lg"
+                style="max-width: 300px"
+            >
+                <span class="font-medium">Success!</span>
+                {{ $page.props.flash.success }}
+            </div>
+            <div
+                v-if="$page.props.flash && $page.props.flash.error"
+                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded fixed top-24 right-4 z-50 shadow-lg"
+                style="max-width: 300px"
+            >
+                <span class="font-medium">Error!</span>
+                {{ $page.props.flash.error }}
+            </div>
+            <div style="position: absolute; left: 300px; top: 180px">
+                <button
+                    @click="createTask"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all shadow-md w-fit flex items-center gap-2"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4v16m8-8H4"
+                        />
+                    </svg>
+                    Create Task
+                </button>
+            </div>
+
+            <div
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mt-24"
+                style="
+                    position: absolute;
+                    left: 300px;
+                    top: 150px;
+                    width: calc(100% - 420px);
+                    grid-auto-rows: min-content;
+                "
             >
                 <TaskCard
                     v-for="task in tasks.data"
                     :key="task.id"
                     compact
-                    class="transition-all duration-200 hover:scale-[1.03] hover:shadow-2xl bg-gradient-to-br from-blue-100 via-white to-blue-200 border border-blue-200 dark:from-blue-900 dark:via-blue-950 dark:to-blue-800 dark:border-blue-800"
+                    class="transition-all duration-200 hover:scale-[1.03] hover:shadow-2xl bg-gradient-to-br from-blue-100 via-white to-blue-200 border border-blue-200 dark:from-blue-900 dark:via-blue-950 dark:to-blue-800 dark:border-blue-800 cursor-pointer self-start h-auto"
+                    @click="showTask(task.id)"
                 >
                     <template #title>
                         <span
@@ -42,15 +69,25 @@
                         >
                     </template>
                     <template #description>
-                        <span
-                            :class="
-                                task.is_completed
-                                    ? 'line-through text-gray-500'
-                                    : 'text-blue-900 dark:text-blue-100'
-                            "
-                            class="block text-base mb-2"
-                        >
+                        <span class="block text-base mb-2">
                             {{ task.description || "No description" }}
+                        </span>
+                    </template>
+                    <template #priority>
+                        <span
+                            class="text-xs font-semibold px-2 py-1 rounded-full"
+                            :class="
+                                task.priority === 'high'
+                                    ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                    : task.priority === 'medium'
+                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+                                    : 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                            "
+                        >
+                            {{
+                                task.priority.charAt(0).toUpperCase() +
+                                task.priority.slice(1)
+                            }}
                         </span>
                     </template>
                     <template #due_date>
@@ -130,7 +167,7 @@
                     </template>
                     <template #actions>
                         <button
-                            @click="editTask(task.id)"
+                            @click.stop="editTask(task.id)"
                             class="text-blue-500 hover:bg-blue-100 px-3 py-1 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
                         >
                             <svg
@@ -150,7 +187,7 @@
                             Edit
                         </button>
                         <button
-                            @click="deleteTask(task.id)"
+                            @click.stop="deleteTask(task.id)"
                             class="text-red-500 hover:bg-red-100 px-3 py-1 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
                         >
                             <svg
@@ -172,7 +209,9 @@
                     </template>
                 </TaskCard>
             </div>
-            <div class="flex justify-center gap-2 items-center w-full py-4 fixed bottom-10 left-0">
+            <div
+                class="flex justify-center gap-2 items-center w-full py-4 fixed bottom-10 left-0"
+            >
                 <button
                     v-if="tasks.prev_page_url"
                     @click="goTo(tasks.prev_page_url)"
@@ -201,7 +240,6 @@ defineProps({
     tasks: Object,
 });
 
-
 function createTask() {
     router.get("/tasks/create");
 }
@@ -216,5 +254,9 @@ function deleteTask(id) {
 
 function goTo(url) {
     router.visit(url);
+}
+
+function showTask(id) {
+    router.get(`/tasks/${id}`);
 }
 </script>

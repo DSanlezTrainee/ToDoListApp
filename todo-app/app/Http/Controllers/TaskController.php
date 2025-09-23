@@ -6,9 +6,16 @@ use App\Models\Task;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\QueryException;
 
 class TaskController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Task::class, 'task');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -48,25 +55,29 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_completed' => 'boolean|default:false',
-            'due_date' => 'nullable|date',
-            'priority' => 'nullable|in:low,medium,high',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'is_completed' => 'boolean',
+                'due_date' => 'nullable|date',
+                'priority' => 'required|in:low,medium,high',
+            ]);
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'priority' => $request->priority,
-            'user_id' => $user->id,
-        ]);
+            Task::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'due_date' => $request->due_date,
+                'priority' => $request->priority,
+                'user_id' => $user->id,
+            ]);
 
-        return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+            return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+        } catch (QueryException $e) {
+            return redirect()->route('tasks.index')->with('error', 'Error creating task in the database.');
+        }
     }
 
     /**
@@ -74,7 +85,15 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        try {
+            return Inertia::render('Tasks/Show', [
+                'task' => $task,
+            ]);
+        } catch (AuthorizationException $e) {
+            return redirect()->route('tasks.index')->with('error', 'You do not have permission to view this task.');
+        } catch (QueryException $e) {
+            return redirect()->route('tasks.index')->with('error', 'Error accessing the database.');
+        }
     }
 
     /**
@@ -82,9 +101,15 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        return Inertia::render('Tasks/Edit', [
-            'task' => $task,
-        ]);
+        try {
+            return Inertia::render('Tasks/Edit', [
+                'task' => $task,
+            ]);
+        } catch (AuthorizationException $e) {
+            return redirect()->route('tasks.index')->withErrors('You do not have permission to edit this task.');
+        } catch (QueryException $e) {
+            return redirect()->route('tasks.index')->withErrors('Error accessing the database.');
+        }
     }
 
     /**
@@ -92,23 +117,29 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_completed' => 'boolean|default:false',
-            'due_date' => 'nullable|date',
-            'priority' => 'nullable|in:low,medium,high',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'is_completed' => 'boolean',
+                'due_date' => 'nullable|date',
+                'priority' => 'nullable|in:low,medium,high',
+            ]);
 
-        $task->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'is_completed' => $request->boolean('is_completed'),
-            'due_date' => $request->due_date,
-            'priority' => $request->priority,
-        ]);
+            $task->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'is_completed' => $request->boolean('is_completed'),
+                'due_date' => $request->due_date,
+                'priority' => $request->priority,
+            ]);
 
-        return redirect()->back()->with('success', 'Task updated successfully.');
+            return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
+        } catch (AuthorizationException $e) {
+            return redirect()->route('tasks.index')->withErrors('You do not have permission to update this task.');
+        } catch (QueryException $e) {
+            return redirect()->route('tasks.index')->withErrors('Error updating the task in the database.');
+        }
     }
 
 
@@ -118,8 +149,13 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        $task->delete();
-
-        return redirect()->back();
+        try {
+            $task->delete();
+            return redirect()->back()->with('success', 'Tarefa eliminada com sucesso.');
+        } catch (AuthorizationException $e) {
+            return redirect()->route('tasks.index')->withErrors('Não tem permissão para eliminar esta tarefa.');
+        } catch (QueryException $e) {
+            return redirect()->route('tasks.index')->withErrors('Erro ao eliminar a tarefa na base de dados.');
+        }
     }
 }

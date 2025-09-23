@@ -46,9 +46,9 @@ const logout = () => {
             >
                 <!-- Logo + Title -->
                 <div class="flex items-center gap-2">
-                    <span
+                    <a href="/"><span
                         class="font-extrabold text-xl sm:text-2xl text-white tracking-tight select-none"
-                        >ToDo List App</span
+                        >ToDo List App</span></a
                     >
                     <span
                         class="hidden sm:inline-block text-xs font-medium text-blue-200 dark:text-blue-300"
