@@ -22,7 +22,12 @@
                 <span class="font-medium">Error!</span>
                 {{ $page.props.flash.error }}
             </div>
-            <div style="position: absolute; left: 300px; top: 180px">
+
+            <div
+                class="flex flex-wrap items-center gap-4 mb-6 justify-center sm:justify-start sticky top-24 z-10   px-2 py-2 "
+            >
+                <!--  style="position: absolute; left: 300px; top: 180px"
+                 class="flex items-center gap-4" -->
                 <button
                     @click="createTask"
                     class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all shadow-md w-fit flex items-center gap-2"
@@ -43,17 +48,51 @@
                     </svg>
                     Create Task
                 </button>
-            </div>
+                <select
+                    v-model="selectedFilterType"
+                    class="border rounded-lg px-2 py-2 pr-8"
+                >
+                    <option value="all">All</option>
+                    <option value="priority">Priority</option>
+                    <option value="status">Status</option>
+                    <option value="due_date">Due Date</option>
+                </select>
+                <!-- Priority dropdown -->
+                <select
+                    v-if="selectedFilterType === 'priority'"
+                    v-model="searchTerm"
+                    @change="filterTasks"
+                    class="border rounded-lg px-3 py-2 pr-8"
+                >
+                    <option value="">Select Priority</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <!-- Status dropdown -->
+                <select
+                    v-else-if="selectedFilterType === 'status'"
+                    v-model="searchTerm"
+                    @change="filterTasks"
+                    class="border rounded-lg px-3 py-2 pr-8"
+                >
+                    <option value="">Select Status</option>
+                    <option value="complete">Complete</option>
+                    <option value="pending">Pending</option>
+                </select>
 
+                <!-- Due date input -->
+                <input
+                    v-else-if="selectedFilterType === 'due_date'"
+                    type="date"
+                    v-model="searchTerm"
+                    @input="filterTasks"
+                    class="border rounded-lg px-3 py-2"
+                />
+            </div>
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mt-24"
-                style="
-                    position: absolute;
-                    left: 300px;
-                    top: 150px;
-                    width: calc(100% - 420px);
-                    grid-auto-rows: min-content;
-                "
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mt-8 w-full px-2"
+                style="grid-auto-rows: min-content"
             >
                 <TaskCard
                     v-for="task in tasks.data"
@@ -162,7 +201,7 @@
                                     d="M12 6v6l4 2"
                                 />
                             </svg>
-                            {{ task.is_completed ? "Completed" : "Pending" }}
+                            {{ task.is_completed ? "Complete" : "Pending" }}
                         </span>
                     </template>
                     <template #actions>
@@ -210,7 +249,7 @@
                 </TaskCard>
             </div>
             <div
-                class="flex justify-center gap-2 items-center w-full py-4 fixed bottom-10 left-0"
+                class="flex justify-center gap-2 items-center w-full py-4 mt-8"
             >
                 <button
                     v-if="tasks.prev_page_url"
@@ -235,10 +274,31 @@
 import { router } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import TaskCard from "@/Components/TaskCard.vue";
+import { ref, watch } from "vue";
 
-defineProps({
+const props = defineProps({
     tasks: Object,
+    filters: Object,
 });
+
+const selectedFilterType = ref("all");
+const searchTerm = ref("");
+
+watch(selectedFilterType, () => {
+    searchTerm.value = "";
+    router.get("/tasks", {}, { preserveState: true });
+});
+
+function filterTasks() {
+    let params = {};
+    const value = (searchTerm.value || "").toString().trim();
+    if (selectedFilterType.value !== "all" && value.length) {
+        params[selectedFilterType.value] = value;
+    } else if (selectedFilterType.value === "all") {
+        params = {};
+    }
+    router.get("/tasks", params, { preserveState: true });
+}
 
 function createTask() {
     router.get("/tasks/create");

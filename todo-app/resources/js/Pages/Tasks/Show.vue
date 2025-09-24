@@ -1,35 +1,53 @@
 <template>
     <AppLayout>
         <div
-            class="w-full min-h-screen pt-24 pb-10 px-2 flex justify-center items-center"
+            class="w-full min-h-screen pt-24 pb-10 px-2 flex flex-col items-center justify-center"
         >
-            <div class="w-full">
+            <h1
+                class="text-4xl font-extrabold text-blue-900 dark:text-blue-100 mb-8 tracking-tight text-center drop-shadow-sm"
+            >
+                Task Details
+            </h1>
+            <button
+                @click="goBack"
+                class="mb-8 bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all shadow-md flex items-center gap-2"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7"
+                    />
+                </svg>
+                Back to Tasks
+            </button>
+            <div class="flex justify-center w-full">
                 <TaskCard
                     :key="task.id"
-                    compact
-                    class="transition-all duration-200 hover:scale-[1.03] hover:shadow-2xl bg-gradient-to-br from-blue-100 via-white to-blue-200 border border-blue-200 dark:from-blue-900 dark:via-blue-950 dark:to-blue-800 dark:border-blue-800"
+                    class="transition-all duration-200 hover:scale-[1.03] hover:shadow-2xl bg-gradient-to-br from-blue-100 via-white to-blue-200 border border-blue-200 dark:from-blue-900 dark:via-blue-950 dark:to-blue-800 dark:border-blue-800 p-10 max-w-2xl min-w-[350px] min-h-[350px] flex-1"
                 >
                     <template #title>
                         <span
-                            class="text-2xl font-bold text-blue-900 dark:text-blue-100"
-                            >{{ task.title }}</span
-                        >
+                            class="text-4xl font-extrabold text-blue-900 dark:text-blue-100"
+                        >{{ task.title }}</span>
                     </template>
                     <template #description>
                         <span
-                            :class="
-                                task.is_completed
-                                    ? 'line-through text-gray-500'
-                                    : 'text-blue-900 dark:text-blue-100'
-                            "
-                            class="block text-base mb-2"
+                            class="block text-3xl mb-4"
                         >
                             {{ task.description || "No description" }}
                         </span>
                     </template>
                     <template #priority>
                         <span
-                            class="text-xs font-semibold px-2 py-1 rounded-full"
+                            class="text-xl font-semibold px-3 py-1 rounded-full"
                             :class="
                                 task.priority === 'high'
                                     ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
@@ -45,7 +63,7 @@
                         </span>
                     </template>
                     <template #due_date>
-                        <span class="text-xs text-blue-700 dark:text-blue-300">
+                        <span class="text-xl text-blue-700 dark:text-blue-300">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 class="inline h-4 w-4 mr-1"
@@ -72,7 +90,7 @@
                     </template>
                     <template #is_completed>
                         <span
-                            class="text-xs font-semibold"
+                            class="text-xl font-semibold"
                             :class="
                                 task.is_completed
                                     ? 'text-green-600'
@@ -130,7 +148,11 @@ import { router } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import TaskCard from "@/Components/TaskCard.vue";
 
-defineProps({
+const props = defineProps({
     task: Object,
 });
+
+function goBack() {
+    router.get("/tasks");
+}
 </script>

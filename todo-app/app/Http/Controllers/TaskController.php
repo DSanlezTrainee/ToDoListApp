@@ -25,20 +25,33 @@ class TaskController extends Controller
 
         $tasks = Task::where('user_id', $user->id);
 
-        if ($request->has('status') && $request->status !== 'all') {
-            $tasks->where('is_completed', $request->status === 'completed');
+        // Por padrão, mostrar apenas tasks pendentes, a menos que o filtro seja explicitamente 'complete'
+        if ($request->filled('status')) {
+            if (strtolower($request->status) === 'complete') {
+                $tasks->where('is_completed', true);
+            } elseif (strtolower($request->status) === 'pending') {
+                $tasks->where('is_completed', false);
+            }
+        } /*else {
+            $tasks->where('is_completed', false);
+        }*/
+
+        if ($request->filled('priority')) {
+            $tasks->where('priority', 'like', '%' . $request->priority . '%');
         }
 
-        if ($request->has('priority')) {
-            $tasks->where('priority', $request->priority);
+        if ($request->filled('due_date')) {
+            $tasks->whereDate('due_date', $request->due_date);
         }
 
         $orderedTasks = $tasks->orderByRaw("is_completed ASC")
-            ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC")->paginate(6);
+            ->orderByRaw("CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC")
+            ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END ASC")
+            ->paginate(6);
 
         return Inertia::render('Tasks/Index', [
             'tasks' => $orderedTasks,
-            'filters' => $request->only(['status', 'priority']),
+            'filters' => $request->only(['status', 'priority', 'due_date']),
         ]);
     }
 
