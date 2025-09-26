@@ -7,27 +7,25 @@
                 My Tasks
             </h1>
             <div
-                v-if="$page.props.flash && $page.props.flash.success"
+                v-if="showFlash && page.props.flash && page.props.flash.success"
                 class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed top-24 right-4 z-50 shadow-lg"
                 style="max-width: 300px"
             >
                 <span class="font-medium">Success!</span>
-                {{ $page.props.flash.success }}
+                {{ page.props.flash.success }}
             </div>
             <div
-                v-if="$page.props.flash && $page.props.flash.error"
+                v-if="showFlash && page.props.flash && page.props.flash.error"
                 class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded fixed top-24 right-4 z-50 shadow-lg"
                 style="max-width: 300px"
             >
                 <span class="font-medium">Error!</span>
-                {{ $page.props.flash.error }}
+                {{ page.props.flash.error }}
             </div>
-
+            <!-- Filtros - Posição absoluta em desktop, normal em mobile -->
             <div
-                class="flex flex-wrap items-center gap-4 mb-6 justify-center sm:justify-start sticky top-24 z-10   px-2 py-2 "
+                class="lg:absolute lg:left-[300px] lg:top-[180px] lg:z-10 flex items-center gap-4"
             >
-                <!--  style="position: absolute; left: 300px; top: 180px"
-                 class="flex items-center gap-4" -->
                 <button
                     @click="createTask"
                     class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all shadow-md w-fit flex items-center gap-2"
@@ -90,8 +88,9 @@
                     class="border rounded-lg px-3 py-2"
                 />
             </div>
+            <!-- Cards - Absolute position in desktop, normal in mobile -->
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mt-8 w-full px-2"
+                class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 lg:absolute lg:left-[300px] lg:top-[220px] lg:w-[calc(100%-420px)]"
                 style="grid-auto-rows: min-content"
             >
                 <TaskCard
@@ -248,8 +247,10 @@
                     </template>
                 </TaskCard>
             </div>
+
+            <!-- Pagination - Absolute position in desktop, normal in mobile -->
             <div
-                class="flex justify-center gap-2 items-center w-full py-4 mt-8"
+                class="flex justify-center gap-2 items-center w-full py-4 mt-8 lg:absolute lg:left-[300px] lg:top-[920px] lg:w-[calc(100%-420px)]"
             >
                 <button
                     v-if="tasks.prev_page_url"
@@ -271,18 +272,36 @@
 </template>
 
 <script setup>
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import TaskCard from "@/Components/TaskCard.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 
 const props = defineProps({
     tasks: Object,
     filters: Object,
 });
 
+const page = usePage();
 const selectedFilterType = ref("all");
 const searchTerm = ref("");
+const showFlash = ref(true);
+
+function startFlashTimer() {
+    showFlash.value = true;
+    setTimeout(() => {
+        showFlash.value = false;
+    }, 2000);
+}
+
+onMounted(() => {
+    if (
+        page.props.flash &&
+        (page.props.flash.success || page.props.flash.error)
+    ) {
+        startFlashTimer();
+    }
+});
 
 watch(selectedFilterType, () => {
     searchTerm.value = "";
@@ -309,6 +328,9 @@ function editTask(id) {
 }
 
 function deleteTask(id) {
+    if (!confirm("Are you sure you want to delete this task?")) {
+        return;
+    }
     router.delete(`/tasks/${id}`);
 }
 

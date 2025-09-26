@@ -119,9 +119,9 @@ class TaskController extends Controller
                 'task' => $task,
             ]);
         } catch (AuthorizationException $e) {
-            return redirect()->route('tasks.index')->withErrors('You do not have permission to edit this task.');
+            return redirect()->route('tasks.index')->with('error', 'You do not have permission to edit this task.');
         } catch (QueryException $e) {
-            return redirect()->route('tasks.index')->withErrors('Error accessing the database.');
+            return redirect()->route('tasks.index')->with('error', 'Error accessing the database.');
         }
     }
 
@@ -149,9 +149,9 @@ class TaskController extends Controller
 
             return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
         } catch (AuthorizationException $e) {
-            return redirect()->route('tasks.index')->withErrors('You do not have permission to update this task.');
+            return redirect()->route('tasks.index')->with('error', 'You do not have permission to update this task.');
         } catch (QueryException $e) {
-            return redirect()->route('tasks.index')->withErrors('Error updating the task in the database.');
+            return redirect()->route('tasks.index')->with('error', 'Error updating the task in the database.');
         }
     }
 
@@ -164,11 +164,11 @@ class TaskController extends Controller
     {
         try {
             $task->delete();
-            return redirect()->back()->with('success', 'Tarefa eliminada com sucesso.');
+            return redirect()->back()->with('success', 'Task eliminated successfully.');
         } catch (AuthorizationException $e) {
-            return redirect()->route('tasks.index')->withErrors('Não tem permissão para eliminar esta tarefa.');
+            return redirect()->route('tasks.index')->with('error', 'You do not have permission to eliminate this task.');
         } catch (QueryException $e) {
-            return redirect()->route('tasks.index')->withErrors('Erro ao eliminar a tarefa na base de dados.');
+            return redirect()->route('tasks.index')->with('error', 'Error eliminating the task in the database.');
         }
     }
 }
