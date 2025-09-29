@@ -1,8 +1,8 @@
-# ToDoListApp - Task Management Application
+# To-Do List App - Task Management Application
 
 ## Overview
 
-ToDoListApp is a task management application built with Laravel and Vue.js that allows users to create, view, edit, and delete tasks. The application features user authentication, task categorization, filtering options, and a responsive design.
+To-Do List App is a task management application built with Laravel and Vue.js that allows users to create, view, edit, and delete tasks. The application features user authentication, task categorization, filtering options, and a responsive design.
 
 ## Architecture
 
