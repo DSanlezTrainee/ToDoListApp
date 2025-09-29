@@ -17,6 +17,10 @@ defineProps({
         type: String,
         required: true,
     },
+    user: {
+        type: Object,
+        default: null,
+    },
 });
 
 function handleImageError() {
@@ -54,13 +58,22 @@ function handleImageError() {
                             class="text-lg font-semibold text-blue-900 dark:text-blue-100"
                             >Start organizing your life now!</span
                         >
-                        <span
-                            ><a
+                        <span>
+                            <a
+                                v-if="!user"
                                 href="/register"
                                 class="text-sm text-blue-400 dark:text-blue-300 hover:underline"
-                                >Create an account or log in to get started.</a
-                            ></span
-                        >
+                            >
+                                Create an account or log in to get started.
+                            </a>
+                            <a
+                                v-else
+                                href="/tasks"
+                                class="text-sm text-blue-400 dark:text-blue-300 hover:underline"
+                            >
+                                Go to your tasks.
+                            </a>
+                        </span>
                     </div>
                 </main>
 
